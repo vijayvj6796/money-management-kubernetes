@@ -1,11 +1,25 @@
-###################################################
-# This Dockerfile is used by the docker-compose.yml
-# file to build the development container.
-# Do not make any changes here unless you know what
-# you are doing.
-###################################################
+# Use official Node.js image
+FROM node:20-alpine
 
-FROM node:18-bullseye as dev
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y openssl
+# Set the working directory
 WORKDIR /app
-CMD ["sh", "./bin/docker-start"]
+
+# Enable Corepack for Yarn 4+ support
+RUN corepack enable && corepack prepare yarn@4.3.1 --activate
+
+# Copy dependency files and install dependencies
+COPY package.json yarn.lock ./
+RUN yarn install
+
+# Copy the rest of the application files
+COPY . .
+
+# Set environment variables
+ENV NODE_ENV=production
+
+# Expose the application port
+EXPOSE 3001
+
+# Start the application
+CMD ["node", "bin/server.js"]
+
